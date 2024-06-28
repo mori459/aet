@@ -23,10 +23,12 @@ double* price_reciept = new double[reciept_size];
 
 //main func
 void Start();
+void ManualStorage();
 void CreateStorage();
 void Shop();
 void PrintStorage();
 void Selling();
+double DiscountCalc(double initial_sum, bool brthday_disc);
 void AddElementToReciept(int id, int count);
 void PrintReciept();
 void ChangePrice();
@@ -104,7 +106,8 @@ void Start()	//@prog start up
 			}
 			else if (storagetype_choice == 2)
 			{
-				std::cout << "В разработке\n";		//custom storage
+				ManualStorage();		//custom storage
+				Shop();
 			}
 			else
 			{
@@ -114,10 +117,72 @@ void Start()	//@prog start up
 	} while (!exit);
 }
 
+void ManualStorage()
+{
+	std::string name_input;
+	double price_input;
+	int ammount_input;
+	char confirm;
+
+
+	delete[]id_arr;
+	delete[]name_arr;
+	delete[]count_arr;
+	delete[]price_arr;
+
+	size = 1;
+	id_arr = new int[size];
+	name_arr = new std::string[size];
+	count_arr = new int[size];
+	price_arr = new double[size];
+
+
+	while (true)
+	{
+		system("cls");
+		std::cout << "Терминал магазина Винтон\n";
+		std::cout << "Создание склада\n\n";
+
+		if (size == 1)	//for first item
+		{
+			id_arr[0] = 1;
+			std::cout << "\nВведите имя нового товара: ";
+			std::getline(std::cin, name_arr[0], '\n');
+
+			std::cout << "Введите цену товара: ";
+			std::cin >> price_arr[0];
+
+			std::cout << "Введите кол-во для пополнения: ";
+			std::cin >> count_arr[0];
+
+			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		}
+		else
+		{
+			AddElementToEnd();
+		}
+
+		do
+		{
+			std::cout << "Продолжить заполнение?\n1 - Да\n2 - Нет\n";
+			std::cin >> confirm;
+		} while (confirm < '1' || confirm > '2');
+		if (confirm == '2')
+		{
+			break;
+		}
+		else if (confirm != '1')
+		{
+			std::cerr << "Fatal Error\n";
+		}
+
+	}
+}
+
 void CreateStorage()	//@template storage func
 {
 	const int static_size = 10;
-	int id[static_size]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	int id[static_size]{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 	std::string name[static_size]{ "Танэгасима", "ПП Шпагина", "Пистолет Маркова", "Карабин Симонова", "ПП Суоми", "MP40", "Sturmgewehr 44", "Браунинг M1918", "Винчестер Модель 1873", "Сайга" };
 	int count[static_size]{ 234, 5346, 24, 543, 532, 5434, 543, 437, 4764, 4744 };
 	double price[static_size]{ 345.0, 34.0, 534.0, 53.0, 45.0, 5334.0, 5.0, 54.0, 5675.0, 453.0 };
@@ -214,8 +279,9 @@ void Selling()
 	bool is_first = true;
 	double total_sum = 0;
 	char confirm;
-	bool is_repeat = false;
+	bool is_repeat;
 	int repeat_id;
+	bool birthday_dicount = false;
 
 
 
@@ -230,7 +296,8 @@ void Selling()
 		std::cin >> choice_id;
 		if (choice_id < 1 || choice_id > size)
 		{
-			std::cerr << "Error\n";
+			std::cerr << "Товара с таким ID нет\n";
+			system("pause");
 			continue;
 		}
 		if (count_arr[choice_id - 1] > 0)
@@ -254,7 +321,8 @@ void Selling()
 		}
 		else
 		{
-			std::cerr << "Error\n";
+			std::cerr << "Этого товара нет\n";
+			system("pause");
 			continue;
 		}
 
@@ -318,7 +386,24 @@ void Selling()
 		break;
 	}
 
-	PrintReciept();
+
+	
+
+	birthday_dicount = false;
+	char bd_conf;
+
+	do
+	{
+		PrintReciept();
+		std::cout << "Активировать скидку на день рождения?\n1 - Да\n2 - Нет\n";
+		std::cin >> bd_conf;
+
+	} while (bd_conf < '1' || bd_conf > '2');
+	if (bd_conf == '1')
+	{
+		birthday_dicount = true;
+	}
+
 
 	char pay;
 	std::cout << "\n\n";
@@ -339,9 +424,25 @@ void Selling()
 		total_income += total_sum;
 	}
 
-	std::cout << total_sum << "  к оплате\n";
+	std::cout << DiscountCalc(total_sum, birthday_dicount) << "  к оплате (с учётом скидок)\n";
 	system("pause");
 }
+
+double DiscountCalc(double initial_sum, bool brthday_disc)
+{
+
+	if (initial_sum >= 3000)
+	{
+		initial_sum *= 0.9;
+	}
+	if (brthday_disc)
+	{
+		initial_sum *= 0.95;
+	}
+
+	return initial_sum;
+}
+
 void AddElementToReciept(int id, int count)
 {
 	std::string* name_temp = new std::string[reciept_size];
@@ -357,12 +458,12 @@ void AddElementToReciept(int id, int count)
 
 	delete[]name_reciept;
 	delete[]count_reciept;
-	delete[]price_reciept;
+	//delete[]price_reciept;
 
 	reciept_size++;
 	name_reciept = new std::string[reciept_size];
-	count_reciept = new int[reciept_size];
-	price_reciept = new double[reciept_size];
+	count_reciept = new int[reciept_size] {};
+	price_reciept = new double[reciept_size] {};
 
 	for (int i = 0; i < reciept_size - 1; i++)
 	{
@@ -374,7 +475,7 @@ void AddElementToReciept(int id, int count)
 	name_reciept[reciept_size - 1] = name_arr[id - 1];
 	count_reciept[reciept_size - 1] += count;
 	price_reciept[reciept_size - 1] += price_arr[id - 1] * count;
-	count_arr[id - 1] = count;
+	count_arr[id - 1] -= count;
 
 	delete[]name_temp;
 	delete[]count_temp;
@@ -387,11 +488,11 @@ void PrintReciept()
 
 	int sep_name_count = TabCount(name_reciept, reciept_size, "Название товара");
 
-	std::cout << "ID\t" << "Название товара" << TabSepparator("Название товара", sep_name_count) << "Кол-во" << "\t\t" << "Цена\n";
+	std::cout << "ID\t" << "Название товара" << TabSepparator("Название товара", sep_name_count) << '\t' << "Кол-во" << "\t" << "Цена\n";
 
 	for (int i = 0; i < reciept_size; i++)
 	{
-		std::cout << id_arr[i] << "\t" << name_reciept[i] << TabSepparator(name_reciept[i], sep_name_count) << count_reciept[i] << "\t" << price_arr[i] << "\n";
+		std::cout << id_arr[i] << "\t" << name_reciept[i] << TabSepparator(name_reciept[i], sep_name_count) << '\t' << count_reciept[i] << "\t" << price_arr[i] << "\n";
 	}
 	//system("pause");
 }
@@ -517,14 +618,15 @@ void AddElementToEnd()
 	}
 
 
-	id_arr[size - 1] = size - 1;
+	id_arr[size - 1] = size;
 	std::cout << "\nВведите имя нового товара: ";
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	std::getline(std::cin, name_arr[size - 1], '\n');
-	std::cout << "Введите кол-во для пополнения: ";
-	std::cin >> count_arr[size - 1];
 	std::cout << "Введите цену товара: ";
 	std::cin >> price_arr[size - 1];
+	std::cout << "Введите кол-во для пополнения: ";
+	std::cin >> count_arr[size - 1];
+
 
 	delete[]id_temp;
 	delete[]name_temp;
